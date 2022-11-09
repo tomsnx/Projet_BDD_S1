@@ -1,0 +1,58 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>afficher les meubles</title>
+{% endblock %}
+
+{% block body %}
+<br><br>
+<div class="head">
+    <h3>Meubles</h3>
+    <a type="button" class="btn btn-outline-success" href="/meubles/add">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+        </svg>
+    Ajouter</a>
+</div>
+<br><br>
+
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>id</th>
+            <th>nom</th>
+            <th>type de meuble</th>
+            <th>prix(€)</th>
+            <th>date de fabricaton</th>
+            <th>couleur</th>
+            <th>matériaux</th>
+            <th>opération</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if meubles | length >= 1 %}
+        {% for ligne in meubles %}
+           <tr>
+               <td>{{ ligne.id }}</td>
+               <td>{{ ligne.nom }}</td>
+               <td>{{ type_meubles(ligne.typeMeuble_id).libelle }}</td>
+               <td>{{ ligne.prix }}</td>
+               <td>{{ ligne.dateFabrication }}</td>
+               <td>{{ ligne.couleur }}</td>
+               <td>{{ ligne.materiaux }}</td>
+               <td>
+                   <button class="btn btn-warning btn-sm"><a href="/meubles/edit?id={{ ligne.id }}&amp;param2={{ligne.libelle}}"><span class="edit-button">editer</span></a></button>
+                   <button class="btn btn-danger btn-sm"><a href="/meubles/delete?id={{ ligne.id }}" ><span class="delete-button">supprimer</span></a></button>
+               </td>
+           </tr>
+        {% endfor %}
+    {% else %}
+            <tr>
+                  <td>
+                      pas de meuble
+                  </td>
+           </tr>
+    {% endif %}
+    </tbody>
+</table>
+{% endblock %}
