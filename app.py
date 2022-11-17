@@ -1,10 +1,4 @@
-#! /usr/bin/python
-# -*- coding:utf-8 -*-
-from flask import Flask, request, render_template, redirect, url_for, abort, flash
-
-app = Flask(__name__)
-app.secret_key = 'une cle(token) : grain de sel(any random string)'
-
+"""
 meubles = [
     {'id':1,'nom':'klippan', 'prix':'50.20', 'dateFabrication':'2020-06-06', 'couleur':'rouge', 'materiaux' :'bois', 'typeMeuble_id':1},
     {'id': 2, 'nom':'malm', 'prix':'12.00', 'dateFabrication':'2020-06-06', 'couleur':'vert', 'materiaux' :'acier', 'typeMeuble_id':2},
@@ -23,6 +17,35 @@ type_meubles = [
             {'id':3,'libelle':'commode'},
             {'id':4,'libelle':'armoire'},
 ]
+"""
+
+
+#! /usr/bin/python
+# -*- coding:utf-8 -*-
+from flask import Flask, request, render_template, redirect, url_for, abort, flash, session, g
+
+import pymysql.cursors
+
+app = Flask(__name__)
+app.secret_key = 'une cle(token) : grain de sel(any random string)'
+
+def get_db():
+    if 'db' not in g:
+        g.db = pymysql.connect(
+            host="localhost",                 # à modifier
+            user="tsiouan",                     # à modifier
+            password="2212",                # à modifier
+            database="BDD_tsiouan",        # à modifier
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor
+        )
+    return g.db
+
+@app.teardown_appcontext
+def teardown_db(exception):
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
 
 @app.route('/')
 def show_accueil():
@@ -30,6 +53,10 @@ def show_accueil():
 
 @app.route('/type-meubles/show')
 def show_type_meuble():
+    mycursor = get_db().cursor()
+    sql = "SELECT * FROM type_meuble ORDER BY libelle"
+    mycursor.execute(sql)
+    type_meubles = mycursor.fetchall()
     return render_template('type_meubles/show_type_meubles.html', types_meuble=type_meubles)
 
 @app.route('/type-meubles/add', methods=['GET'])
@@ -38,35 +65,46 @@ def add_type_meuble():
 
 @app.route('/type-meubles/add', methods=['POST'])
 def valid_add_type_meuble():
+    mycursor = get_db().cursor()
     libelle = request.form.get('libelle', '')
-    print(u'type ajouté , libellé :', libelle)
+    tuple_insert = (libelle,)
+    sql = "INSERT INTO type_meuble(libelle) VALUES (%s);"
+    mycursor.execute(sql, tuple_insert)
+    get_db().commit()
     message = u'type ajouté , libellé :' + libelle
     flash(message, 'alert-success')
     return redirect('/type-meubles/show')
 
 @app.route('/type-meubles/delete', methods=['GET'])
 def delete_type_meuble():
+    mycursor = get_db().cursor()
     id = request.args.get('id', '')
-    print ("un type meuble supprimé, id :", id)
-    message = u'un type meuble supprimé, id : ' + id
-    flash(message, 'alert-warning')
+    tuple_delete = (id,)
+    sql = "DELETE FROM type_meuble WHERE id as id_type_meuble = %s;"
+    mycursor.execute(sql, tuple_delete)
+    get_db().commit()
+    flash(u'un type de meuble supprimé, id : ' + id)
     return redirect('/type-meubles/show')
 
 @app.route('/type-meubles/edit', methods=['GET'])
 def edit_type_meuble():
+    mycursor = get_db().cursor()
     id = request.args.get('id', '')
-    libelle = request.args.get('libelle', '')     # comment passé plusieurs paramètres (clé primaire composés)
-    id = int(id)
-    type_meuble = type_meubles[id-1]
+    sql = "SELECT id_type_meuble, libelle FROM type_meuble WHERE id_type_meuble = %s;"
+    mycursor.execute(sql, (id))
+    type_meuble = mycursor.fetchone()
     return render_template('type_meubles/edit_type_meubles.html', type_meuble=type_meuble)
 
 @app.route('/type-meubles/edit', methods=['POST'])
 def valid_edit_type_meuble():
+    mycursor = get_db().cursor()
     libelle = request.form['libelle']
     id = request.form.get('id', '')
-    print(u'type meuble modifié, id: ', id, " libelle :", libelle)
-    message=u'type meuble modifié, id: ' + id + " libelle : " + libelle
-    flash(message, 'alert-success')
+    tuple_update = (libelle, id)
+    sql = "UPDATE type_meuble SET libelle = %s WHERE id = %s;"
+    mycursor.execute(sql, tuple_update)
+    get_db().commit()
+    flash(u'type de meuble modifié, id : ' + id + 'libelle : ' + libelle)
     return redirect('/type-meubles/show')
 
 @app.route('/meubles/show')
