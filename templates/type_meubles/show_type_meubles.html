@@ -25,14 +25,14 @@
         </tr>
     </thead>
     <tbody>
-    {% if types_meuble | length >= 1 %}
-        {% for ligne in types_meuble %}
+    {% if type_meuble | length >= 1 %}
+        {% for ligne in type_meuble %}
            <tr>
-                  <td>{{ ligne.id }}</td>
+                  <td>{{ ligne.id_type_meuble }}</td>
                   <td>{{ ligne.libelle }}</td>
                   <td>
-                      <button class="btn btn-warning btn-sm"><a href="/type-meubles/edit?id={{ ligne.id }}&amp;param2={{ligne.libelle}}"><span class="edit-button">editer</span></a></button>
-                      <button class="btn btn-danger btn-sm"><a href="/type-meubles/delete?id={{ ligne.id }}" ><span class="delete-button">supprimer</span></a></button>
+                      <button class="btn btn-warning btn-sm"><a href="/type-meubles/edit?id={{ ligne.id_type_meuble }}&amp;param2={{ligne.libelle}}"><span class="edit-button">editer</span></a></button>
+                      <button class="btn btn-danger btn-sm"><a href="/type-meubles/delete?id={{ ligne.id_type_meuble }}" ><span class="delete-button">supprimer</span></a></button>
                   </td>
            </tr>
         {% endfor %}
