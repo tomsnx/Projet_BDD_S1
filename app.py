@@ -32,10 +32,10 @@ app.secret_key = 'une cle(token) : grain de sel(any random string)'
 def get_db():
     if 'db' not in g:
         g.db = pymysql.connect(
-            host="localhost",                 # à modifier
-            user="tsiouan",                     # à modifier
-            password="2212",                # à modifier
-            database="BDD_tsiouan",        # à modifier
+            host="localhost",
+            user="tsiouan",
+            password="2212",
+            database="BDD_tsiouan",
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor
         )
@@ -54,10 +54,13 @@ def show_accueil():
 @app.route('/type-meubles/show')
 def show_type_meuble():
     mycursor = get_db().cursor()
-    sql = "SELECT * FROM type_meuble ORDER BY libelle"
+    sql = """SELECT type_meuble.*
+            FROM type_meuble
+            ORDER BY type_meuble.id_type_meuble"""
+
     mycursor.execute(sql)
-    type_meubles = mycursor.fetchall()
-    return render_template('type_meubles/show_type_meubles.html', types_meuble=type_meubles)
+    type_meuble = mycursor.fetchall()
+    return render_template('type_meubles/show_type_meubles.html', type_meuble=type_meuble)
 
 @app.route('/type-meubles/add', methods=['GET'])
 def add_type_meuble():
@@ -67,9 +70,10 @@ def add_type_meuble():
 def valid_add_type_meuble():
     mycursor = get_db().cursor()
     libelle = request.form.get('libelle', '')
-    tuple_insert = (libelle,)
-    sql = "INSERT INTO type_meuble(libelle) VALUES (%s);"
-    mycursor.execute(sql, tuple_insert)
+    sql = """INSERT INTO type_meuble(libelle)
+            VALUES (%s);"""
+
+    mycursor.execute(sql, [libelle])
     get_db().commit()
     message = u'type ajouté , libellé :' + libelle
     flash(message, 'alert-success')
@@ -79,32 +83,43 @@ def valid_add_type_meuble():
 def delete_type_meuble():
     mycursor = get_db().cursor()
     id = request.args.get('id', '')
-    tuple_delete = (id,)
-    sql = "DELETE FROM type_meuble WHERE id as id_type_meuble = %s;"
-    mycursor.execute(sql, tuple_delete)
+
+    sql = """DELETE FROM type_meuble
+            WHERE id_type_meuble = %s;"""
+
+    mycursor.execute(sql, [id])
     get_db().commit()
-    flash(u'un type de meuble supprimé, id : ' + id)
+    message = u'un type de meuble supprimé, id : ' + id
+    flash(message, 'alert-warning')
     return redirect('/type-meubles/show')
 
 @app.route('/type-meubles/edit', methods=['GET'])
 def edit_type_meuble():
     mycursor = get_db().cursor()
     id = request.args.get('id', '')
-    sql = "SELECT id_type_meuble, libelle FROM type_meuble WHERE id_type_meuble = %s;"
-    mycursor.execute(sql, (id))
+
+    sql = """SELECT type_meuble.*
+            FROM type_meuble
+            WHERE type_meuble.id_type_meuble = %s;"""
+
+    mycursor.execute(sql, [id])
     type_meuble = mycursor.fetchone()
     return render_template('type_meubles/edit_type_meubles.html', type_meuble=type_meuble)
 
 @app.route('/type-meubles/edit', methods=['POST'])
 def valid_edit_type_meuble():
     mycursor = get_db().cursor()
-    libelle = request.form['libelle']
     id = request.form.get('id', '')
-    tuple_update = (libelle, id)
-    sql = "UPDATE type_meuble SET libelle = %s WHERE id = %s;"
-    mycursor.execute(sql, tuple_update)
+    libelle = request.form.get('libelle', '')
+
+    sql = """UPDATE type_meuble
+            SET libelle = %s
+            WHERE id_type_meuble = %s;"""
+
+    mycursor.execute(sql, [id, libelle])
     get_db().commit()
-    flash(u'type de meuble modifié, id : ' + id + 'libelle : ' + libelle)
+    message = u'type de meuble modifié, id : ' + id + ' libelle : ' + libelle
+    flash(message, 'alert-warning')
     return redirect('/type-meubles/show')
 
 @app.route('/meubles/show')
