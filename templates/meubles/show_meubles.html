@@ -30,19 +30,19 @@
         </tr>
     </thead>
     <tbody>
-    {% if meubles | length >= 1 %}
-        {% for ligne in meubles %}
+    {% if meuble | length >= 1 %}
+        {% for ligne in meuble %}
            <tr>
-               <td>{{ ligne.id }}</td>
-               <td>{{ ligne.nom }}</td>
-               <td>{{ type_meubles(ligne.typeMeuble_id).libelle }}</td>
+               <td>{{ ligne.id_meuble }}</td>
+               <td>{{ ligne.nom_meuble }}</td>
+               <td>{{ ligne.libelle }}</td>
                <td>{{ ligne.prix }}</td>
                <td>{{ ligne.dateFabrication }}</td>
                <td>{{ ligne.couleur }}</td>
                <td>{{ ligne.materiaux }}</td>
                <td>
-                   <button class="btn btn-warning btn-sm"><a href="/meubles/edit?id={{ ligne.id }}&amp;param2={{ligne.libelle}}"><span class="edit-button">editer</span></a></button>
-                   <button class="btn btn-danger btn-sm"><a href="/meubles/delete?id={{ ligne.id }}" ><span class="delete-button">supprimer</span></a></button>
+                   <button class="btn btn-warning btn-sm"><a href="/meubles/edit?id={{ ligne.id_meuble }}&amp;param2={{ligne.libelle}}"><span class="edit-button">editer</span></a></button>
+                   <button class="btn btn-danger btn-sm"><a href="/meubles/delete?id={{ ligne.id_meuble }}" ><span class="delete-button">supprimer</span></a></button>
                </td>
            </tr>
         {% endfor %}

@@ -55,8 +55,8 @@ def show_accueil():
 def show_type_meuble():
     mycursor = get_db().cursor()
     sql = """SELECT type_meuble.*
-            FROM type_meuble
-            ORDER BY type_meuble.id_type_meuble"""
+             FROM type_meuble
+             ORDER BY type_meuble.id_type_meuble"""
 
     mycursor.execute(sql)
     type_meuble = mycursor.fetchall()
@@ -71,7 +71,7 @@ def valid_add_type_meuble():
     mycursor = get_db().cursor()
     libelle = request.form.get('libelle', '')
     sql = """INSERT INTO type_meuble(libelle)
-            VALUES (%s);"""
+             VALUES (%s);"""
 
     mycursor.execute(sql, [libelle])
     get_db().commit()
@@ -85,7 +85,7 @@ def delete_type_meuble():
     id = request.args.get('id', '')
 
     sql = """DELETE FROM type_meuble
-            WHERE id_type_meuble = %s;"""
+             WHERE id_type_meuble = %s;"""
 
     mycursor.execute(sql, [id])
     get_db().commit()
@@ -99,8 +99,8 @@ def edit_type_meuble():
     id = request.args.get('id', '')
 
     sql = """SELECT type_meuble.*
-            FROM type_meuble
-            WHERE type_meuble.id_type_meuble = %s;"""
+             FROM type_meuble
+             WHERE type_meuble.id_type_meuble = %s;"""
 
     mycursor.execute(sql, [id])
     type_meuble = mycursor.fetchone()
@@ -113,10 +113,10 @@ def valid_edit_type_meuble():
     libelle = request.form.get('libelle', '')
 
     sql = """UPDATE type_meuble
-            SET libelle = %s
-            WHERE id_type_meuble = %s;"""
+             SET libelle = %s
+             WHERE id_type_meuble = %s;"""
 
-    mycursor.execute(sql, [id, libelle])
+    mycursor.execute(sql, [libelle, id])
     get_db().commit()
     message = u'type de meuble modifié, id : ' + id + ' libelle : ' + libelle
     flash(message, 'alert-warning')
@@ -124,30 +124,60 @@ def valid_edit_type_meuble():
 
 @app.route('/meubles/show')
 def show_meubles():
-    def types_meubles(id_type):
-        return type_meubles[id_type-1]
-    return render_template('meubles/show_meubles.html', meubles=meubles, type_meubles=types_meubles)
+    mycursor = get_db().cursor()
+
+    sql = """SELECT meuble.*, type_meuble.*
+             FROM meuble
+             LEFT JOIN type_meuble ON meuble.type_meuble_id = type_meuble.id_type_meuble
+             ORDER BY meuble.id_meuble"""
+
+    mycursor.execute(sql)
+    meuble = mycursor.fetchall()
+    return render_template('meubles/show_meubles.html', meuble=meuble)
 
 @app.route('/meubles-cards/show')
 def show_meubles_cards():
-    def types_meubles(id_type):
-        return type_meubles[id_type-1]
-    return render_template('meubles_cards/show_meubles_cards.html', meubles=meubles, type_meubles=types_meubles)
+    mycrusor = get_db().cursor()
+
+    sql = """ SELECT * FROM meubles"""
+    sql2 = """ SELECT * FROM type_meuble"""
+
+    mycrusor.execute(sql)
+    meubles = mycrusor.fetchall()
+
+    mycrusor.execute(sql2)
+    types_meubles = mycrusor.fetchall()
+
+    return render_template('meubles_cards/show_meubles_cards.html', meuble=meubles, type_meubles=types_meubles)
 
 @app.route('/meubles/add', methods=['GET'])
 def add_meubles():
-    return render_template('meubles/add_meubles.html', type_meubles=type_meubles)
+    mycursor = get_db().cursor()
+
+    sql = """SELECT type_meuble.*
+             FROM type_meuble"""
+
+    mycursor.execute(sql)
+    type_meuble = mycursor.fetchall()
+    return render_template('meubles/add_meubles.html', type_meubles=type_meuble)
 
 @app.route('/meubles/add', methods=['POST'])
 def valid_add_meubles():
+    mycursor = get_db().cursor()
+
     nom = request.form.get('nom', '')
     type_meubles_id = request.form.get('type_meubles_id', '')
     prix = request.form.get('prix', '')
     date_fabrication = request.form.get('dateFabrication', '')
     couleur = request.form.get('couleur', '')
     materiaux = request.form.get('materiaux', '')
-    image = request.form.get('image', '')
-    print(u'Meuble ajouté , Nom: ', nom, ' - Type Meuble Id: ', type_meubles_id, ' - Prix: ', prix, ' - Date Fabrication: ', date_fabrication, ' - Couleur: ', couleur, ' - Materiaux: ', materiaux)
+
+    sql = """INSERT INTO meuble(nom_meuble, type_meuble_id, prix, dateFabrication, couleur, materiaux)
+             VALUES(%s, %s, %s, %s, %s, %s)"""
+
+    mycursor.execute(sql, [nom, type_meubles_id, prix, date_fabrication, couleur, materiaux])
+    get_db().commit()
+
     message = u'Meuble ajouté , Nom: ' + nom + ' - Type Meuble Id: ' + type_meubles_id + ' - Prix: ' + prix + ' - Date Fabrication: ' + date_fabrication + ' - Couleur: ' + couleur + ' - Materiaux: ' + materiaux
     flash(message, 'alert-success')
     return redirect('/meubles/show')
